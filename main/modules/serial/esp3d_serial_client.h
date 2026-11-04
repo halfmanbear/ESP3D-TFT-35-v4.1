@@ -34,6 +34,8 @@ class ESP3DSerialClient : public ESP3DClient {
   ESP3DSerialClient();
   ~ESP3DSerialClient();
   bool begin();
+  // Exact bytes for GRBL realtime/manual commands; reports driver write failure.
+  bool writeRaw(const char* data, size_t size);
   void handle();
   void end();
   void process(ESP3DMessage* msg);

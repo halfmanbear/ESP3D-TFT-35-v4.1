@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+set -euo pipefail
+cd "$(dirname "$0")/.."
+: "${IDF_PATH:?Source ESP-IDF v5.1.5 export.sh first}"
+python "$IDF_PATH/tools/idf.py" -B build/esp_tft35_v41 \
+  -DIDF_TARGET=esp32 \
+  -DESP32S3_HMI43V3=OFF -DESP32_ESP_TFT35_V41=ON \
+  -DTARGET_FW_MARLIN=OFF -DTARGET_FW_GRBL=ON \
+  -DSD_CARD_SERVICE=OFF -DBT_SERVICE=OFF -DUSB_SERIAL_SERVICE=OFF \
+  -DWIFI_SERVICE=OFF -DWEB_SERVICES=OFF -DSSDP_SERVICE=OFF \
+  -DMDNS_SERVICE=OFF -DTELNET_SERVICE=OFF -DNOTIFICATIONS_SERVICE=OFF \
+  -DTIME_SERVICE=OFF -DWEBDAV_SERVICES=OFF -DWS_SERVICE=OFF \
+  build "$@"
+
+python scripts/package_esp_tft35_v41.py

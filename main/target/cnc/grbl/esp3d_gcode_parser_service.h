@@ -23,6 +23,9 @@
 
 #include "esp3d_data_type.h"
 #include "esp3d_string.h"
+#include <string>
+#include <vector>
+#include "grbl_protocol.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -32,16 +35,27 @@ enum class FW_GCodeCommand : uint8_t {
   reset_stream_numbering = 0,
 };
 
-#define ESP3D_POLLING_COMMANDS_INDEX_TEMPERATURE_TEMPERATURE 0
-#define ESP3D_POLLING_COMMANDS_INDEX_TEMPERATURE_POSITION 1
-#define ESP3D_POLLING_COMMANDS_INDEX_TEMPERATURE_SPEED 2
+#define ESP3D_POLLING_COMMANDS_INDEX_STATUS 0
 
-#define ESP3D_POLLING_COMMANDS_COUNT 3
+#define ESP3D_POLLING_COMMANDS_COUNT 1
 
 class ESP3DGCodeParserService final {
  public:
   ESP3DGCodeParserService();
   ~ESP3DGCodeParserService();
+  grbl::Status snapshot();
+  // Copies; call only when Status::filesGeneration / logGeneration changed.
+  grbl::FileList files();
+  std::vector<std::string> terminalLog();
+  bool send(const char* command);
+  bool sendTerminal(const char* line);
+  // Held-control jog: call about every 30 ms while a control is held, jogRelease() when it is let go.
+  // `weights` are signed axis speed fractions (-1..1) of `feed` mm/min. False = the hold is over.
+  bool jogHold(const std::vector<std::pair<char, double>>& weights, unsigned feed);
+  void jogRelease();
+  // Asks the controller for the G-code files in a folder such as "/sd/".
+  bool listFiles(const std::string& folder);
+  void poll(bool enabled);
   ESP3DDataType getType(const char *data);
   bool hasMultiLineReport(const char *data);
   const char *getLastError() { return _lastError.c_str(); }
@@ -56,7 +70,6 @@ class ESP3DGCodeParserService final {
   bool setPollingCommandsLastRun(uint8_t index, uint64_t value);
 
  private:
-  bool _isMultiLineReportOnGoing;
   std::string _lastError;
   uint64_t _lineResend;
 };

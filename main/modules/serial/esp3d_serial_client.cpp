@@ -109,6 +109,11 @@ void ESP3DSerialClient::process(ESP3DMessage *msg) {
   }
 }
 
+bool ESP3DSerialClient::writeRaw(const char* data, size_t size) {
+  return _started && data && size &&
+         uart_write_bytes(ESP3D_SERIAL_PORT, data, size) == static_cast<int>(size);
+}
+
 bool ESP3DSerialClient::isEndChar(uint8_t ch) {
   return ((char)ch == '\n' || (char)ch == '\r');
 }

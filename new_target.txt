@@ -1,0 +1,44 @@
+https://github.com/luc-github/ESP3D-TFT/issues/82
+
+## ESP-TFT35 v4.1 GPIO Pinout (ESP32-WROOM-32U-N8)
+
+Manually probed the PCB; Want touchscreen firmware to work with a FluidNC CO2 laser CNC
+
+### UART2 (Serial)
+
+| Signal | GPIO |
+|--------|------|
+| RX | 16 |
+| TX | 17 |
+
+### Touch Controller (I²C) Capacitive Touch Panel Controller: FT6336U
+
+| Signal | GPIO |
+|--------|------|
+| SCL | 4 |
+| SDA | 0 |
+| INT | 21 |
+| RST | 14 |
+
+### LCD (SPI - SPI3_HOST) 3.5" LCD: CL35BC219-40A (SPI) Resolution: 480x320
+
+| Signal | GPIO |
+|--------|------|
+| SDA | 23 |
+| SDO | 19 |
+| SCLK | 18 |
+| CS | 25 |
+| RS/DC | 33 |
+| RST | 27 |
+| Backlight | 5 | 
+
+*NOTE: backlight pin is inverted*
+
+### Misc
+
+| Signal | GPIO | Notes |
+|--------|------|-------|
+| Button | 35 | |
+| Buzzer | 22 | Unpopulated |
+
+

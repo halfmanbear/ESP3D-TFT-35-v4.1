@@ -30,6 +30,7 @@
 #include "components/spinner_component.h"
 #include "components/text_editor_component.h"
 #include "esp3d_client_types.h"
+#include "esp3d_hal.h"
 #include "esp3d_json_settings.h"
 #include "esp3d_log.h"
 #include "esp3d_settings.h"

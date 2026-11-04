@@ -55,6 +55,9 @@ bool ESP3DRenderingClient::sendGcode(const char *data) {
   if (data == nullptr || strlen(data) == 0) {
     return false;
   }
+#if TARGET_IS_GRBL
+  return esp3dGcodeParser.send(data);
+#else
   // the command must end with \n, so we add it if not present
   std::string cmd = "";
   ESP3DRequest requestId = {.id = 0};
@@ -67,6 +70,7 @@ bool ESP3DRenderingClient::sendGcode(const char *data) {
   return esp3dCommands.dispatch(
       cmd.c_str(), ESP3DClientType::stream, requestId, ESP3DMessageType::unique,
       ESP3DClientType::rendering, ESP3DAuthenticationLevel::admin);
+#endif
 }
 
 ESP3DRenderingClient::ESP3DRenderingClient() {
@@ -118,10 +122,18 @@ bool ESP3DRenderingClient::begin() {
 }
 
 void ESP3DRenderingClient::handle() {
+#if !TARGET_IS_GRBL
   static uint64_t now = esp3d_hal::millis();
   static uint8_t polling_cmd_index = 0;
+#endif
   if (_started) {
+#if TARGET_IS_GRBL
+    // Replies such as file lists arrive as many 512 byte chunks: drain a burst per tick.
+    uint8_t burst = 16;
+    while (burst-- > 0 && getRxMsgsCount() > 0) {
+#else
     if (getRxMsgsCount() > 0) {
+#endif
       if (pdTRUE == xSemaphoreTake(_xGuiSemaphore, portMAX_DELAY)) {
         ESP3DMessage *msg = popRx();
         if (msg) {
@@ -132,6 +144,9 @@ void ESP3DRenderingClient::handle() {
         xSemaphoreGive(_xGuiSemaphore);
       }
     }
+#if TARGET_IS_GRBL
+    esp3dGcodeParser.poll(_polling_on);
+#else
     if (_polling_on) {
       if (esp3d_hal::millis() - now >
           ESP3D_POLLING_INTERVAL / ESP3D_POLLING_COMMANDS_COUNT) {
@@ -165,6 +180,7 @@ void ESP3DRenderingClient::handle() {
         now = esp3d_hal::millis();
       }
     }
+#endif
   }
 }
 
