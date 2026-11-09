@@ -1,0 +1,92 @@
+name: release-esp-tft35-v41
+
+# Push a tag such as v0.1.0-esp-tft35-v41 to build and publish a GitHub release.
+# Run it by hand (Actions tab) to build and get the files as a workflow artifact only.
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  IDF_VERSION: v5.1.5
+  IMAGE: ESP-TFT35-v4.1-fluidnc-pendant-merged.bin
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Cache ESP-IDF and tools
+        id: cache-idf
+        uses: actions/cache@v4
+        with:
+          path: |
+            esp-idf
+            ~/.espressif
+          key: ${{ runner.os }}-idf-${{ env.IDF_VERSION }}-esp32-py3.11
+
+      - name: Install ESP-IDF
+        if: steps.cache-idf.outputs.cache-hit != 'true'
+        run: |
+          git clone -b "$IDF_VERSION" --depth 1 --recursive --shallow-submodules \
+            https://github.com/espressif/esp-idf.git esp-idf
+          ./esp-idf/install.sh esp32
+
+      - name: Build and package
+        run: |
+          source esp-idf/export.sh
+          export ESP3D_BUILD_NOTE="GitHub Actions, ESP-IDF $IDF_VERSION"
+          scripts/build_esp_tft35_v41.sh
+
+      - name: Collect release files
+        run: |
+          mkdir dist
+          cp "build/esp_tft35_v41/$IMAGE" build/esp_tft35_v41/build-manifest.json dist/
+          cd dist
+          sha256sum "$IMAGE" > "$IMAGE.sha256"
+          cat "$IMAGE.sha256"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: esp-tft35-v41-firmware
+          path: dist/*
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: esp-tft35-v41-firmware
+          path: dist
+
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          {
+            cat RELEASE_NOTES.md
+            printf '\n## Checksum (SHA256)\n\n```\n'
+            cat "dist/$IMAGE.sha256"
+            printf '```\n'
+          } > release-notes.md
+          # Pre-release until the UART link and a machine have been tested; drop the flag then.
+          gh release create "$TAG" dist/* \
+            --title "ESP-TFT35 v4.1 FluidNC pendant (MKS DLC32 MAX) $TAG" \
+            --notes-file release-notes.md \
+            --prerelease \
+            --verify-tag
