@@ -1,3 +1,5 @@
+> **Fork notice:** this is a fork of [luc-github/ESP3D-TFT](https://github.com/luc-github/ESP3D-TFT) that adds an experimental touch-only FluidNC pendant firmware for the ESP-TFT35 v4.1 screen and the MKS DLC32 MAX. See the [releases](https://github.com/halfmanbear/ESP3D-TFT-35-v4.1/releases) and [`docs/fluidtouch-port.md`](docs/fluidtouch-port.md). The rest of this README, and the badges and links below, are from upstream.
+
 <span align="left"><img src="https://github.com/luc-github/ESP3D-TFT/blob/main/resources/logo/ESP3D.png" width="200px"/></span><span align="left">ESP3D-TFT Firmware for ESP32 based TFT - State: Alpha (do not rush on it yet)</span>    
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
 [![All Contributors](https://img.shields.io/badge/all_contributors-4-orange.svg?style=flat-square)](#contributors-)
